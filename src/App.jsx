@@ -35,6 +35,7 @@ function App() {
 
     const alchemy = new Alchemy(config);
     const data = await alchemy.core.getTokenBalances(userAddress);
+    console.log(data)
 
     setResults(data);
 
@@ -146,14 +147,14 @@ function App() {
                   key={e.id}
                 >
                   <Box>
-                    <b>Symbol:</b> ${tokenDataObjects[i].symbol}&nbsp;
+                  <b>Symbol : {tokenDataObjects[i].symbol.substring(0, 6) + "..."}</b>
                   </Box>
                   <Box>
                     <b>Balance:</b>&nbsp;
-                    {Utils.formatUnits(
+                    {parseFloat(Utils.formatUnits(
                       e.tokenBalance,
-                      tokenDataObjects[i].decimals
-                    )}
+                      tokenDataObjects[i].decimals                     
+                    )).toFixed(2)}
                   </Box>
                   <Image src={tokenDataObjects[i].logo} />
                 </Flex>
