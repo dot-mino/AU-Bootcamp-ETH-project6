@@ -12,17 +12,20 @@ import {
 import { Alchemy, Network, Utils } from 'alchemy-sdk';
 import { useState } from 'react';
 
+
 function App() {
   const [userAddress, setUserAddress] = useState('');
   const [results, setResults] = useState([]);
   const [hasQueried, setHasQueried] = useState(false);
   const [tokenDataObjects, setTokenDataObjects] = useState([]);
+  
 
   async function getTokenBalance() {
     const config = {
-      apiKey: '<-- COPY-PASTE YOUR ALCHEMY API KEY HERE -->',
-      network: Network.ETH_MAINNET,
-    };
+      apiKey: import.meta.env.VITE_MAINNET_API,
+      network: Network.ETH_MAINNET
+  };
+
 
     const alchemy = new Alchemy(config);
     const data = await alchemy.core.getTokenBalances(userAddress);
