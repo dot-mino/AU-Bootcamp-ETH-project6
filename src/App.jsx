@@ -8,10 +8,12 @@ import {
   Input,
   SimpleGrid,
   Text,
+  Spinner,
+  Stack,
 } from '@chakra-ui/react';
 import { Alchemy, Network, Utils } from 'alchemy-sdk';
 import { useState } from 'react';
-import { ethers } from 'ethers';
+
 
 
 function App() {
@@ -20,9 +22,12 @@ function App() {
   const [hasQueried, setHasQueried] = useState(false);
   const [tokenDataObjects, setTokenDataObjects] = useState([]);
   const [connected, setConnected] = useState(false);
-  
+  const [loading, setLoading ] = useState(false);
+
+
 
   async function getTokenBalance() {
+    await setLoading(true);
     const config = {
       apiKey: import.meta.env.VITE_MAINNET_API,
       network: Network.ETH_SEPOLIA
@@ -44,6 +49,7 @@ function App() {
 
     setTokenDataObjects(await Promise.all(tokenDataPromises));
     setHasQueried(true);
+    setLoading(false)
   }
 
   async function connectMetaMask() {
@@ -64,6 +70,7 @@ function App() {
     }
   }
   return (
+    <div>
     <Box w="100vw">
       <Center>
         <Flex
@@ -113,6 +120,19 @@ function App() {
        
 
         <Heading my={36}>ERC-20 token balances:</Heading>
+        {loading && (
+          <Center mt={4}>
+                <Stack direction='row' height='5rem'>
+                <Spinner
+                   thickness='4px'
+                   speed='0.65s'
+                   emptyColor='gray.200'
+                   color='blue.500'
+                   size='xl'
+                  />
+                </Stack>
+          </Center>
+        )}  
 
         {hasQueried ? (
           <SimpleGrid w={'90vw'} columns={4} spacing={24}>
@@ -144,7 +164,12 @@ function App() {
           'Please make a query! This may take a few seconds...'
         )}
       </Flex>
+     
     </Box>
+
+    
+     
+    </div>
   );
 }
 
