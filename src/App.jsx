@@ -10,6 +10,7 @@ import {
   Text,
   Spinner,
   Stack,
+  CircularProgress,
 } from '@chakra-ui/react';
 import { Alchemy, Network, Utils } from 'alchemy-sdk';
 import { useState } from 'react';
@@ -30,7 +31,7 @@ function App() {
     await setLoading(true);
     const config = {
       apiKey: import.meta.env.VITE_MAINNET_API,
-      network: Network.ETH_SEPOLIA
+      network: Network.ETH_MAINNET
   };
 
     const alchemy = new Alchemy(config);
@@ -40,16 +41,15 @@ function App() {
 
     setResults(data);
 
-    const tokenDataPromises = [];
+    const tokenData = await Promise.all(
+      data.tokenBalances.map((balance) => {
+        return alchemy.core.getTokenMetadata(balance.contractAddress);
+      })
+    );
+ 
+    setTokenDataObjects(tokenData);
+  
 
-    for (let i = 0; i < data.tokenBalances.length; i++) {
-      const tokenData = alchemy.core.getTokenMetadata(
-        data.tokenBalances[i].contractAddress
-      );
-      tokenDataPromises.push(tokenData);
-    }
-
-    setTokenDataObjects(await Promise.all(tokenDataPromises));
     setHasQueried(true);
     setLoading(false)
     }else{
@@ -130,42 +130,44 @@ function App() {
         {loading && (
           <Center mt={4}>
                 <Stack direction='row' height='5rem'>
-                <Spinner
-                   thickness='4px'
-                   speed='0.65s'
-                   emptyColor='gray.200'
-                   color='blue.500'
-                   size='xl'
-                  />
+                <CircularProgress isIndeterminate color="blue" size="24px" />
                 </Stack>
           </Center>
         )}  
 
         {hasQueried ? (
           <SimpleGrid w={'90vw'} columns={4} spacing={24}>
-            {results.tokenBalances.map((e, i) => {
-              return (
-                <Flex
-                  flexDir={'column'}
-                  color="white"
-                  bg="blue"
-                  w={'20vw'}
-                  key={e.id}
-                >
-                  <Box>
-                  <b>Symbol : {tokenDataObjects[i].symbol.substring(0, 6) + "..."}</b>
-                  </Box>
-                  <Box>
-                    <b>Balance:</b>&nbsp;
-                    {parseFloat(Utils.formatUnits(
-                      e.tokenBalance,
-                      tokenDataObjects[i].decimals                     
-                    )).toFixed(2)}
-                  </Box>
-                  <Image src={tokenDataObjects[i].logo} />
-                </Flex>
-              );
-            })}
+           {results.tokenBalances.map((e, i) => {
+          return (
+            <Flex
+              key={i} 
+              flexDir={"column"}
+              border="1px"
+              borderRadius={4}
+              textAlign="center"
+              w="100%"
+              p="2"
+            > 
+      <Box>
+        <b>Symbol : {tokenDataObjects[i].symbol.substring(0, 6) + "..."}</b>
+      </Box>
+      <Box>
+        <b>Balance:</b>&nbsp;
+        {parseFloat(Utils.formatUnits(
+          e.tokenBalance,
+          tokenDataObjects[i].decimals                     
+        )).toFixed(2)}
+      </Box>
+      <Image
+        alignSelf="center"
+        w="24"
+        h="24"
+        src={tokenDataObjects[i]?.logo}
+      />
+    </Flex>
+  );
+})}
+
           </SimpleGrid>
         ) : (
           'Please make a query! This may take a few seconds...'
