@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { Alchemy, Network, Utils } from 'alchemy-sdk';
 import { useState } from 'react';
-
+import { ethers } from 'ethers'
 
 
 function App() {
@@ -34,7 +34,8 @@ function App() {
   };
 
     const alchemy = new Alchemy(config);
-    const data = await alchemy.core.getTokenBalances(userAddress);
+    if(ethers.utils.isAddress(userAddress)){
+      const data = await alchemy.core.getTokenBalances(userAddress);
     console.log(data)
 
     setResults(data);
@@ -51,6 +52,11 @@ function App() {
     setTokenDataObjects(await Promise.all(tokenDataPromises));
     setHasQueried(true);
     setLoading(false)
+    }else{
+      alert('Invalid address');
+      window.location.reload(); 
+    }
+    
   }
 
   async function connectMetaMask() {
