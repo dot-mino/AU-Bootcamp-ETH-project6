@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { Alchemy, Network, Utils } from 'alchemy-sdk';
 import { useState } from 'react';
+import { ethers } from 'ethers';
 
 
 function App() {
@@ -18,14 +19,14 @@ function App() {
   const [results, setResults] = useState([]);
   const [hasQueried, setHasQueried] = useState(false);
   const [tokenDataObjects, setTokenDataObjects] = useState([]);
+  const [connected, setConnected] = useState(false);
   
 
   async function getTokenBalance() {
     const config = {
       apiKey: import.meta.env.VITE_MAINNET_API,
-      network: Network.ETH_MAINNET
+      network: Network.ETH_SEPOLIA
   };
-
 
     const alchemy = new Alchemy(config);
     const data = await alchemy.core.getTokenBalances(userAddress);
@@ -43,6 +44,24 @@ function App() {
 
     setTokenDataObjects(await Promise.all(tokenDataPromises));
     setHasQueried(true);
+  }
+
+  async function connectMetaMask() {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        
+        const accounts = await ethereum.request({ method: 'eth_accounts' });
+        const userAddress = accounts[0];
+  
+        setUserAddress(userAddress);
+        setConnected(true);
+      } else {
+        console.log('MetaMask non è installato');
+      }
+    } catch (error) {
+      console.error('Errore durante la connessione a MetaMask:', error);
+    }
   }
   return (
     <Box w="100vw">
@@ -82,6 +101,16 @@ function App() {
         <Button fontSize={20} onClick={getTokenBalance} mt={36} bgColor="blue">
           Check ERC-20 Token Balances
         </Button>
+        {connected ? (
+          <Button fontSize={20} mt={36} bgColor="green">
+          Already connected, click on Check Balance
+        </Button>
+        ) : (
+          <Button fontSize={20} onClick={connectMetaMask} mt={36} bgColor="blue">
+          Connect with MetaMask
+          </Button>
+        )}
+       
 
         <Heading my={36}>ERC-20 token balances:</Heading>
 
